@@ -1,13 +1,12 @@
 import React, { useState, useEffect} from 'react';
-import {fetchDailyData} from '../../api';
-import { Line } from 'react-chartjs-2';
+import {fetchDailyData  } from '../../api';
+import { Line, Bar } from 'react-chartjs-2';
 
 import styles from '../Chart/Chart.module.css';
 
-const Chart = () => {
+const Chart = ({ data, country }) => {
     const [dailyData, setDailyData] = useState([]);
-
-    
+   
     useEffect ( () => {
         const fetchApi = async () => {
             const dailyData = await fetchDailyData();
@@ -15,24 +14,12 @@ const Chart = () => {
         } 
         
         fetchApi();
-        //console.log(dailyData);
-    });
 
-   
-    const lineChart = (
-        // check if data fetched or not
-        //{confirmed_data} =  dailyData.map(({ date }) => date)
-        
+    },[]);
 
-        dailyData.length ? 
-        (
-            <Line
-                data = {{
-                    // label and dataset needs to be an array
-                    // destructure date and return it
-                    label: dailyData.map(({ date }) => date).values,
-                   // label: [12,32,32,345,455],
-                    datasets: [{
+    const lineChartData = {
+        labels: dailyData.map(({ date }) => date),
+        datasets: [{
                         data: dailyData.map(({ confirmed }) => confirmed),
                         label: 'Infected',
                         borderColor: '#3333ff',
@@ -46,14 +33,31 @@ const Chart = () => {
                         backgroundColor: 'rgba(255,0,0,0.5)',
 
                     } ],
-                }}
-            />
-        ) :
-        null
-    );
+      }
+       
+     
+    
     return (
         <div className={styles.container}>
-            {lineChart}
+         {/* check if data fetched or not */}
+        { country ? (
+            <Bar data={{
+              labels:['Infected','Recovered','Deaths'],
+        datasets: [{
+                      label: 'People',
+                      backgroundColor: [
+                        'rgba(0,0,255,0.5)',
+                        'rgba(0,255,0,0.5)',
+                        'rgba(255,0,0,0.5)'
+                      ],
+    
+                      data: [data.confirmed.value,data.recovered.value,data.deaths.value]
+                    } ],
+        options: [{
+            legend: {display: false},
+            title: {display: true, text: `Current state in ${country}`},
+        }]
+        }}/>) : <Line data={lineChartData}/> }
         </div>
     );
 };
